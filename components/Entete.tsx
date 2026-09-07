@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { config, lienWhatsApp } from "@/lib/config";
 
@@ -36,8 +37,15 @@ export function Entete({ actif }: { actif?: string }) {
 
       <header className="sticky top-0 z-70 border-b border-liseret bg-papier/90 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-7 lg:px-10">
-          <Link href="/" className="titre text-2xl text-surClair sm:text-[26px]">
-            {config.nom}
+          {/* Le logo réel, pas le mot composé en Anton. ⚠️ La baseline
+              « Chaussures pour tous vos styles » est absente du fichier servi :
+              elle a été recadrée, conformément à la décision du § 3.5 — elle ne
+              doit apparaître nulle part, pas même en `alt`. */}
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${config.nom}, accueil`}>
+            <Image src="/logo-marque.png" alt="" width={990} height={560} priority
+                   className="h-7 w-auto sm:h-8" />
+            <Image src="/logo-mot.png" alt={config.nom} width={1140} height={210}
+                   className="h-4 w-auto sm:h-[18px]" />
           </Link>
 
           <nav aria-label="Navigation principale" className="hidden items-center gap-7 text-sm text-neutre md:flex">

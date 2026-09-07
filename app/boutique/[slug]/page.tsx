@@ -4,14 +4,10 @@ import { notFound } from "next/navigation";
 import { Entete } from "@/components/Entete";
 import { PiedDePage } from "@/components/PiedDePage";
 import { config, lienWhatsApp } from "@/lib/config";
-import { produitParSlug, colorisDe, listerProduits, tousLesSlugs, POINTURES } from "@/lib/bdd";
+import { produitParSlug, colorisDe, listerProduits, imageDe, POINTURES } from "@/lib/bdd";
 
 type Params = { [k: string]: string | string[] | undefined };
 const lire = (p: Params, k: string) => (Array.isArray(p[k]) ? p[k][0] : p[k]);
-
-export async function generateStaticParams() {
-  return tousLesSlugs().map((slug) => ({ slug }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -88,7 +84,7 @@ export default async function Fiche({
           <div className="lg:col-span-7">
             <figure className="vignette relative aspect-square overflow-hidden rounded-bloc bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/produits/p${(produit.id % 4) + 1}.jpg`} alt={produit.nom} className="h-full w-full object-cover" />
+              <img src={imageDe(produit)} alt={produit.nom} className="h-full w-full object-cover" />
               {/* Garde-fou du § 1.4-4, en bandeau vu. */}
               <figcaption className="absolute inset-x-0 bottom-0 bg-encre/78 px-4 py-2.5 text-[11px] tracking-[.14em] text-surSombre/90 uppercase">
                 Photo d&apos;illustration — le modèle exact est confirmé sur WhatsApp
@@ -194,7 +190,7 @@ export default async function Fiche({
                   <Link href={`/boutique/${p.slug}`} className="block">
                     <div className="cadre aspect-square bg-liseret/40">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={`/produits/p${(p.id % 4) + 1}.jpg`} alt={p.nom} loading="lazy" className="h-full w-full object-cover" />
+                      <img src={imageDe(p)} alt={p.nom} loading="lazy" className="h-full w-full object-cover" />
                     </div>
                     <span className="filet" aria-hidden />
                     <div className="rounded-b-[5px] bg-white p-3">

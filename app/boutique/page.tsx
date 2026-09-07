@@ -4,7 +4,7 @@ import { Entete } from "@/components/Entete";
 import { PiedDePage } from "@/components/PiedDePage";
 import { Trace } from "@/components/Trace";
 import { lienWhatsApp } from "@/lib/config";
-import { listerProduits, CATEGORIES, POINTURES, COLORIS_FILTRE, type Filtres } from "@/lib/bdd";
+import { listerProduits, imageDe, CATEGORIES, POINTURES, COLORIS_FILTRE, type Filtres } from "@/lib/bdd";
 
 /* Mot-clé du § 4.3 : `baskets et sneakers douala`. */
 export const metadata: Metadata = {
@@ -170,13 +170,13 @@ export default async function Boutique({ searchParams }: { searchParams: Promise
               </div>
             ) : (
               <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-                {produits.map((prod, i) => (
+                {produits.map((prod) => (
                   <article key={prod.id} className="carte monte overflow-hidden">
                     <Link href={`/boutique/${prod.slug}`} className="block">
                       <div className="cadre relative aspect-square bg-liseret/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={`/produits/p${(i % 4) + 1}.jpg`}
+                          src={imageDe(prod)}
                           alt={prod.nom}
                           loading="lazy"
                           className="h-full w-full object-cover"

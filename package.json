@@ -8,7 +8,8 @@
     "start": "next start",
     "textes-manquants": "node scripts-textes-manquants.mjs",
     "pret-pour-la-ligne": "node scripts-textes-manquants.mjs --bloquant",
-    "importer": "node scripts-importer-donnees.mjs"
+    "importer": "node scripts-importer-donnees.mjs",
+    "creer-admin": "node scripts-creer-admin.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

@@ -18,7 +18,7 @@ const SOURCE = "../donnees/catalogue-demo.json";
 function versSlug(nom) {
   return nom
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[̀-ͯ]/g, "")   // accents combinants
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");

@@ -47,6 +47,31 @@ export type Produit = {
 
 export type ColorisLigne = { libelle: string; stock: number };
 
+/* ⚠️ `prix_interne_fcfa` est ABSENT de cette liste, délibérément. Le § 3.3
+   l'interdit de publication et le § 4.4 le marque « jamais publié ». Un
+   `SELECT *` le chargerait en mémoire : il suffirait alors qu'un jour un
+   `Produit` soit passé à un composant client pour que Next le sérialise dans
+   le payload et le rende public. Le back-office, lui, aura sa propre requête. */
+const CHAMPS_PUBLICS = `p.id, p.reference, p.slug, p.nom, p.marque, p.categorie,
+                        p.matiere, p.pointure_min, p.pointure_max, p.description, p.image`;
+
+/** La photo du produit, ou l'illustration générique tant que le client n'a pas
+ *  livré les siennes (§ 3.4).
+ *
+ *  ⚠️ Le champ « Photo » du back-office aboutit ici. Sans cette lecture, il
+ *  était saisi pour rien : les pages calculaient l'image uniquement à partir de
+ *  l'identifiant. Passer par `p.id` plutôt que par le rang d'affichage garantit
+ *  aussi qu'un même produit montre la même illustration en liste et en fiche. */
+export function imageDe(p: { id: number; image: string | null }): string {
+  const saisie = p.image?.trim();
+  /* ⚠️ Seul un chemin depuis la racine (`/…`) ou une URL complète est servable.
+     Les données de démonstration portent des `medias/produits/…` relatifs, qui
+     se résoudraient contre l'URL courante et donneraient une image cassée :
+     dans ce cas on retombe sur l'illustration générique. */
+  const servable = saisie && (saisie.startsWith("/") || /^https?:\/\//.test(saisie));
+  return servable ? saisie : `/produits/p${(p.id % 4) + 1}.jpg`;
+}
+
 /** Les filtres, tels que le § 4.3 les a arrêtés : trois, plus celui du prix. */
 export type Filtres = { categorie?: string; pointure?: number; coloris?: string };
 
@@ -68,13 +93,13 @@ export function listerProduits(f: Filtres = {}): Produit[] {
   }
 
   return bdd()
-    .prepare(`SELECT p.* FROM produits p WHERE ${où.join(" AND ")} ORDER BY p.reference`)
+    .prepare(`SELECT ${CHAMPS_PUBLICS} FROM produits p WHERE ${où.join(" AND ")} ORDER BY p.reference`)
     .all(...args) as Produit[];
 }
 
 export function produitParSlug(slug: string): Produit | undefined {
   return bdd()
-    .prepare("SELECT * FROM produits WHERE slug = ? AND actif = 1")
+    .prepare(`SELECT ${CHAMPS_PUBLICS} FROM produits p WHERE p.slug = ? AND p.actif = 1`)
     .get(slug) as Produit | undefined;
 }
 

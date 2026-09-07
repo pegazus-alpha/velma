@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { config, lienWhatsApp } from "@/lib/config";
 
@@ -11,7 +12,8 @@ export function PiedDePage() {
     <footer className="border-t border-liseret bg-papier">
       <div className="mx-auto grid max-w-[1500px] gap-10 px-4 pt-14 pb-10 sm:grid-cols-12 sm:px-7 lg:px-10">
         <div className="sm:col-span-5">
-          <p className="titre text-3xl">{config.nom}</p>
+          <Image src="/logo.png" alt={config.nom} width={1140} height={760}
+                 className="h-20 w-auto" />
           <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-neutre">
             Baskets et sneakers à Douala. Tu choisis en ligne, on règle le reste sur
             WhatsApp.
