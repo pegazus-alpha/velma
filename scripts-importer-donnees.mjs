@@ -13,7 +13,9 @@ import { readFileSync } from "node:fs";
 const CHEMIN_BASE = process.env.DATABASE_PATH ?? "./data.sqlite";
 const SOURCE = "../donnees/catalogue-demo.json";
 
-/** `Nike Air Max Plus TN` → `nike-air-max-plus-tn`. Le slug porte l'URL et le
+/** Normalise une adresse. ⚠️ L'adresse vient du champ `slug` du catalogue,
+ *  jamais du nom : elle est figée et ne doit pas bouger d'un import à l'autre.
+ *  `Nike Air Max Plus TN` → `nike-air-max-plus-tn`. Le slug porte l'URL et le
  *  mot-clé de la fiche (§ 4.4). */
 function versSlug(nom) {
   return nom
@@ -39,7 +41,7 @@ const insererProduit = d.prepare(`
           @pointure_min, @pointure_max, @description,
           @prix_interne_fcfa, @image, 1, @le, @le)
   ON CONFLICT(reference) DO UPDATE SET
-    slug=excluded.slug, nom=excluded.nom, marque=excluded.marque,
+    nom=excluded.nom, marque=excluded.marque,
     categorie=excluded.categorie, matiere=excluded.matiere,
     pointure_min=excluded.pointure_min, pointure_max=excluded.pointure_max,
     prix_interne_fcfa=excluded.prix_interne_fcfa, image=excluded.image,
@@ -54,7 +56,7 @@ const tout = d.transaction((produits) => {
     const [min, max] = String(p.pointures).split("-").map(Number);
     insererProduit.run({
       reference: p.reference,
-      slug: versSlug(p.nom),
+      slug: p.slug ?? versSlug(p.reference),
       nom: p.nom,
       marque: p.marque,
       categorie: p.categorie,

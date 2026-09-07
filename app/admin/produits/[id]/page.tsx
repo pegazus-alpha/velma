@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sessionActive } from "@/lib/session";
-import { unProduit, colorisDuProduit, conflits, enregistrer, valider, versSlug, type Saisie } from "@/lib/admin";
+import { unProduit, colorisDuProduit, conflits, enregistrer, valider, type Saisie } from "@/lib/admin";
 import { CATEGORIES } from "@/lib/bdd";
 
 /**
@@ -63,6 +63,7 @@ export default async function FormulaireProduit({
      erreur, sinon le produit en base, sinon les valeurs de départ. */
   const defauts: Saisie = lireReprise(typeof sp.saisie === "string" ? sp.saisie : undefined) ?? {
     reference: produit?.reference ?? "",
+    slug: produit?.slug ?? "",
     nom: produit?.nom ?? "",
     marque: produit?.marque ?? "Nike",
     categorie: produit?.categorie ?? CATEGORIES[0],
@@ -85,6 +86,8 @@ export default async function FormulaireProduit({
 
     const saisie: Saisie = {
       reference: texte("reference"),
+      /* Laissée vide, l'adresse se déduit de la RÉFÉRENCE — jamais du nom. */
+      slug: texte("slug") || texte("reference"),
       nom: texte("nom"),
       marque: texte("marque"),
       categorie: texte("categorie"),
@@ -112,17 +115,16 @@ export default async function FormulaireProduit({
       redirect(`/admin/produits/${cible}?${params}`);
     }
 
-    const idFinal = enregistrer(id, saisie);
+    const enregistre = enregistrer(id, saisie);
     /* La boutique est en rendu serveur : sans cela, elle continuerait à servir
        l'ancienne version depuis le cache.
        ⚠️ La fiche vit sous `/boutique/[slug]`, pas sous le nom : passer le nom
-       brut invalidait un chemin inexistant, donc rien du tout. */
+       brut invalidait un chemin inexistant, donc rien du tout. L'adresse étant
+       désormais figée, celle qu'on purge est toujours la bonne. */
     revalidatePath("/boutique");
-    revalidatePath(`/boutique/${versSlug(saisie.nom)}`);
-    /* Le nom a pu changer : l'ancienne adresse doit être purgée elle aussi. */
-    if (produit && produit.slug !== versSlug(saisie.nom)) revalidatePath(`/boutique/${produit.slug}`);
+    revalidatePath(`/boutique/${enregistre.slug}`);
     revalidatePath("/admin/produits");
-    redirect(`/admin/produits/${idFinal}?enregistre=1`);
+    redirect(`/admin/produits/${enregistre.id}?enregistre=1`);
   }
 
   return (
@@ -168,9 +170,41 @@ export default async function FormulaireProduit({
               <input id="nom" name="nom" required defaultValue={defauts.nom}
                      placeholder="Nike Air Max 90" className={CHAMP} />
               <p className="mt-1.5 text-[12px] text-neutre">
-                Le nom donne l&apos;adresse de la fiche, et c&apos;est lui qu&apos;on
-                cherche sur Google.
+                C&apos;est lui qu&apos;on cherche sur Google. Tu peux le corriger
+                quand tu veux : l&apos;adresse de la fiche ne bougera pas.
               </p>
+            </div>
+            <div className="sm:col-span-2">
+              {/* L'adresse est un champ à part, figé après la création. Elle ne
+                  dérive PAS du nom : renommer un modèle casserait sinon tous les
+                  liens déjà partagés. Décision du 2026-09-08. */}
+              {creation ? (
+                <>
+                  <label htmlFor="slug" className={ETIQUETTE}>Adresse de la fiche</label>
+                  <input id="slug" name="slug" defaultValue={defauts.slug}
+                         placeholder="nike-air-max-90" className={CHAMP} />
+                  <p className="mt-1.5 text-[12px] text-neutre">
+                    Elle donne <span className="font-mono">/boutique/nike-air-max-90</span>.
+                    Laissée vide, on prend la référence.{" "}
+                    <strong className="font-semibold text-surClair">
+                      Elle se fixe maintenant et ne changera plus
+                    </strong>{" "}
+                    : un lien envoyé sur WhatsApp doit répondre encore dans six mois.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className={ETIQUETTE}>Adresse de la fiche</p>
+                  <input type="hidden" name="slug" value={defauts.slug} />
+                  <p className="mt-2 rounded-bloc border border-liseret bg-liseret/25 px-4 py-3 font-mono text-[14px] text-neutre">
+                    /boutique/{produit!.slug}
+                  </p>
+                  <p className="mt-1.5 text-[12px] text-neutre">
+                    Figée à la création : les liens déjà envoyés restent valables,
+                    même si tu renommes le modèle.
+                  </p>
+                </>
+              )}
             </div>
             <div>
               <label htmlFor="marque" className={ETIQUETTE}>Marque</label>

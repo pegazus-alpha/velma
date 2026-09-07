@@ -57,6 +57,8 @@ export function versSlug(nom: string): string {
 
 export type Saisie = {
   reference: string;
+  /** L'adresse de la fiche. Champ à part entière, **jamais dérivé du nom**. */
+  slug: string;
   nom: string;
   marque: string;
   categorie: string;
@@ -103,10 +105,10 @@ export function valider(s: Saisie): string[] {
   if (photo && !photo.startsWith("/") && !/^https?:\/\//.test(photo))
     erreurs.push("Le chemin de la photo doit commencer par « / » — par exemple /produits/p1.jpg.");
   if (!s.coloris.length) erreurs.push("Au moins un coloris est nécessaire.");
-  /* Un nom sans lettre ni chiffre (« ### ») donnerait un slug vide, donc une
-     fiche sans adresse. */
-  if (s.nom.trim() && !versSlug(s.nom))
-    erreurs.push("Le nom doit contenir des lettres ou des chiffres : c'est lui qui fait l'adresse de la fiche.");
+  /* L'adresse ne peut pas être vide : elle porte l'URL de la fiche. Le
+     formulaire la déduit de la référence quand le client la laisse en blanc. */
+  if (!versSlug(s.slug))
+    erreurs.push("L'adresse de la fiche doit contenir des lettres ou des chiffres.");
   return erreurs;
 }
 
@@ -125,28 +127,36 @@ export function conflits(id: number | null, s: Saisie): string[] {
   if (reference && pris("reference", reference))
     erreurs.push(`La référence ${reference} est déjà utilisée par un autre produit.`);
 
-  const slug = versSlug(s.nom);
+  const slug = versSlug(s.slug);
   if (slug && pris("slug", slug))
-    erreurs.push(`Un autre produit porte déjà le nom « ${s.nom.trim()} » : les deux fiches auraient la même adresse.`);
+    erreurs.push(`L'adresse « ${slug} » est déjà utilisée par un autre produit.`);
 
   return erreurs;
 }
 
-export function enregistrer(id: number | null, s: Saisie): number {
+/** Renvoie l'identifiant **et** l'adresse effective : celle-ci est figée en
+ *  base, elle ne se déduit pas de la saisie qu'on vient d'envoyer. */
+export function enregistrer(id: number | null, s: Saisie): { id: number; slug: string } {
   const d = bdd();
   const maintenant = new Date().toISOString();
-  const slug = versSlug(s.nom);
+  const slug = versSlug(s.slug);
 
   const tout = d.transaction(() => {
     let idProduit: number;
+    let slugFinal: string;
     if (id) {
-      d.prepare(`UPDATE produits SET reference=?, slug=?, nom=?, marque=?, categorie=?,
+      /* ⚠️ `slug` n'est délibérément PAS dans ce SET. L'adresse est figée à la
+         création (décision du 2026-09-08) : renommer un modèle ne doit jamais
+         casser les liens déjà partagés sur WhatsApp ni ceux qu'a indexés
+         Google. Le nom reste libre, l'adresse ne bouge plus. */
+      d.prepare(`UPDATE produits SET reference=?, nom=?, marque=?, categorie=?,
                  matiere=?, pointure_min=?, pointure_max=?, description=?,
                  prix_interne_fcfa=?, image=?, actif=?, modifie_le=? WHERE id=?`)
-        .run(s.reference, slug, s.nom, s.marque, s.categorie, s.matiere || null,
+        .run(s.reference, s.nom, s.marque, s.categorie, s.matiere || null,
              s.pointure_min, s.pointure_max, s.description || null,
              s.prix_interne_fcfa, s.image || null, s.actif ? 1 : 0, maintenant, id);
       idProduit = id;
+      slugFinal = (d.prepare("SELECT slug FROM produits WHERE id = ?").get(id) as { slug: string }).slug;
     } else {
       const r = d.prepare(`INSERT INTO produits (reference, slug, nom, marque, categorie,
                            matiere, pointure_min, pointure_max, description,
@@ -156,13 +166,14 @@ export function enregistrer(id: number | null, s: Saisie): number {
              s.pointure_min, s.pointure_max, s.description || null,
              s.prix_interne_fcfa, s.image || null, s.actif ? 1 : 0, maintenant, maintenant);
       idProduit = Number(r.lastInsertRowid);
+      slugFinal = slug;
     }
     /* Les coloris sont remplacés en bloc : le formulaire est la source de
        vérité, et `ON DELETE CASCADE` couvre la suppression du produit. */
     d.prepare("DELETE FROM coloris WHERE produit_id = ?").run(idProduit);
     const ins = d.prepare("INSERT INTO coloris (produit_id, libelle, stock) VALUES (?,?,?)");
     for (const c of s.coloris) if (c.libelle.trim()) ins.run(idProduit, c.libelle.trim(), c.stock);
-    return idProduit;
+    return { id: idProduit, slug: slugFinal };
   });
 
   return tout();
