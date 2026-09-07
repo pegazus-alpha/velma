@@ -6,21 +6,26 @@ import { Cinematique } from "@/components/Cinematique";
 import { Trace } from "@/components/Trace";
 import { config, lienWhatsApp } from "@/lib/config";
 import { MODULES, FAMILLES, ETAPES, MESSAGE_DEMO, type Module } from "@/lib/modules";
+import { DonneesStructurees } from "@/components/DonneesStructurees";
+import { commerce } from "@/lib/schemas";
+import { partage } from "@/lib/meta";
 
 /* Mot-clé principal de la page — § 4.3 : `acheter nike original douala`.
    Il s'intègre au titre et à la description, pas en bloc rapporté. */
 export const metadata: Metadata = {
-  title: "Acheter des Nike originales à Douala",
+  /* ⚠️ La marque est écrite ici, pas héritée : le `template` du layout racine
+     ne s'applique pas à sa propre page. Sans cela l'accueil était la seule
+     page dont le titre ne portait pas « VELMA ». */
+  title: `Acheter des Nike originales à Douala — ${config.nom}`,
   description:
     "Baskets et sneakers originales à Douala, du 38 au 46. Choisis ton modèle, ta pointure, ta couleur — on parle prix sur WhatsApp. Boutique à Akwa centre.",
   alternates: { canonical: "/" },
-  openGraph: {
+  openGraph: partage({
     title: `Acheter des Nike originales à Douala — ${config.nom}`,
     description:
       "Le catalogue à jour, du 38 au 46. Tu choisis en ligne, on règle le reste sur WhatsApp.",
     url: "/",
-    type: "website",
-  },
+  }),
 };
 
 /* ── La garniture : le dispositif qui occupe la phase de lecture ── */
@@ -281,6 +286,9 @@ function Section({ m, i }: { m: Module; i: number }) {
 export default function Accueil() {
   return (
     <>
+      {/* La fiche du commerce : c'est elle qui alimente le resultat local
+          de Google, decisif pour « nike douala » (§ 2.2). */}
+      <DonneesStructurees donnees={commerce()} />
       <Entete />
 
       <aside className="fixed top-1/2 left-6 z-50 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex"

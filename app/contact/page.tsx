@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageContenu, Bloc } from "@/components/PageContenu";
 import { ARemplir } from "@/components/ARemplir";
 import { config, lienWhatsApp } from "@/lib/config";
+import { partage } from "@/lib/meta";
 
 /* Mot-clé du § 4.3 : `boutique chaussures akwa douala`. Cette page est faite
    pour faire venir des gens en boutique — c'est précisément pourquoi le point
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
   description:
     "La boutique VELMA est à Akwa centre, Douala. Ouverte tous les jours de 7h à 22h. Écris-nous sur WhatsApp avant de te déplacer.",
   alternates: { canonical: "/contact" },
+  openGraph: partage({ url: "/contact" }),
 };
 
 export default function Contact() {

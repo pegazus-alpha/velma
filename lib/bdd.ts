@@ -109,9 +109,13 @@ export function colorisDe(produitId: number): ColorisLigne[] {
     .all(produitId) as ColorisLigne[];
 }
 
-export function tousLesSlugs(): string[] {
-  return (bdd().prepare("SELECT slug FROM produits WHERE actif = 1").all() as { slug: string }[])
-    .map((r) => r.slug);
+/** Les fiches à publier dans le plan du site : seulement celles en ligne.
+ *  Un produit retiré doit disparaître du sitemap, sans quoi on annonce à Google
+ *  une adresse qui répond 404. */
+export function fichesPubliees(): { slug: string; modifie_le: string }[] {
+  return bdd()
+    .prepare("SELECT slug, modifie_le FROM produits WHERE actif = 1 ORDER BY reference")
+    .all() as { slug: string; modifie_le: string }[];
 }
 
 /** Les quatre familles sont une constante, pas une table (§ 4.4). */

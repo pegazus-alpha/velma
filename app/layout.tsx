@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Inter } from "next/font/google";
 import { config } from "@/lib/config";
+import { partage } from "@/lib/meta";
 import "./globals.css";
 
 /* § 3.2 : deux familles, pas davantage. Anton en graisse unique, Inter en
@@ -27,6 +28,15 @@ export const metadata: Metadata = {
   },
   description:
     "Baskets et sneakers à Douala, du 38 au 46. Tu choisis ton modèle, ta pointure, ta couleur. On parle prix sur WhatsApp. Boutique à Akwa.",
+  openGraph: partage({
+    title: `${config.nom} — Baskets et sneakers à Douala`,
+    description:
+      "Baskets et sneakers à Douala, du 38 au 46. Tu choisis ton modèle, ta pointure, ta couleur. On parle prix sur WhatsApp. Boutique à Akwa.",
+    url: "/",
+  }),
+  /* Le lien se partage surtout dans une conversation WhatsApp (§ 2.1) : la
+     grande vignette est ce qui s'y affiche. */
+  twitter: { card: "summary_large_image" },
 };
 
 /** Grain du papier — SVG inline, aucune requête réseau.

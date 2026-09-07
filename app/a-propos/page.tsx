@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageContenu, Bloc } from "@/components/PageContenu";
 import { ARemplir } from "@/components/ARemplir";
 import { config, lienWhatsApp } from "@/lib/config";
+import { partage } from "@/lib/meta";
 
 /* Mot-clé du § 4.3 pour cette page : `comment reconnaitre une vraie nike d'une fausse`.
    Le § 2.5 le note comme un créneau libre localement — aucune version camerounaise
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
   description:
     "Ce qu'on vend à Douala, et comment vérifier une paire avant d'acheter. La boutique est à Akwa, tu peux passer voir.",
   alternates: { canonical: "/a-propos" },
+  openGraph: partage({ url: "/a-propos" }),
 };
 
 export default function APropos() {

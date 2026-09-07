@@ -5,6 +5,9 @@ import { Entete } from "@/components/Entete";
 import { PiedDePage } from "@/components/PiedDePage";
 import { config, lienWhatsApp } from "@/lib/config";
 import { produitParSlug, colorisDe, listerProduits, imageDe, POINTURES } from "@/lib/bdd";
+import { DonneesStructurees } from "@/components/DonneesStructurees";
+import { produitSchema, filDAriane } from "@/lib/schemas";
+import { partage } from "@/lib/meta";
 
 type Params = { [k: string]: string | string[] | undefined };
 const lire = (p: Params, k: string) => (Array.isArray(p[k]) ? p[k][0] : p[k]);
@@ -20,6 +23,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${p.nom} à Douala`,
     description: `${p.nom} à Douala, pointures ${p.pointure_min} à ${p.pointure_max}. Choisis ta taille et ton coloris, on confirme la disponibilité et le prix sur WhatsApp.`,
     alternates: { canonical: `/boutique/${p.slug}` },
+    /* ⚠️ La vignette reste la carte de marque, pas la photo du produit.
+       Montrer la chaussure convertirait mieux sur WhatsApp, mais les visuels
+       sont encore génériques (§ 3.4) et un aperçu WhatsApp ne porte pas le
+       bandeau « photo d'illustration » qu'impose le § 1.4-4. À rouvrir quand
+       les vraies photos arriveront. */
+    openGraph: partage({
+      title: `${p.nom} à Douala`,
+      description: `Pointures ${p.pointure_min} à ${p.pointure_max}. Choisis ta taille et ton coloris, on confirme la disponibilité sur WhatsApp.`,
+      url: `/boutique/${p.slug}`,
+    }),
   };
 }
 
@@ -69,6 +82,16 @@ export default async function Fiche({
 
   return (
     <>
+      <DonneesStructurees donnees={produitSchema(produit)} />
+      {/* Le fil d'ariane est aussi à l'écran, juste en dessous : le schéma
+          décrit ce que le visiteur voit, il ne l'invente pas. */}
+      <DonneesStructurees
+        donnees={filDAriane([
+          { nom: "Accueil", chemin: "/" },
+          { nom: "La boutique", chemin: "/boutique" },
+          { nom: produit.nom, chemin: `/boutique/${produit.slug}` },
+        ])}
+      />
       <Entete actif="/boutique" />
 
       <nav className="mx-auto max-w-[1500px] px-4 pt-6 text-[13px] text-neutre sm:px-7 lg:px-10" aria-label="Fil d'ariane">

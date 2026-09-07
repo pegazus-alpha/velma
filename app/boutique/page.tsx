@@ -5,6 +5,7 @@ import { PiedDePage } from "@/components/PiedDePage";
 import { Trace } from "@/components/Trace";
 import { lienWhatsApp } from "@/lib/config";
 import { listerProduits, imageDe, CATEGORIES, POINTURES, COLORIS_FILTRE, type Filtres } from "@/lib/bdd";
+import { partage } from "@/lib/meta";
 
 /* Mot-clé du § 4.3 : `baskets et sneakers douala`. */
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
   description:
     "Le catalogue VELMA : baskets et sneakers à Douala, du 38 au 46. Filtre par pointure, catégorie et coloris. On parle prix sur WhatsApp.",
   alternates: { canonical: "/boutique" },
+  openGraph: partage({ url: "/boutique" }),
 };
 
 /* ⚠️ Pas de pages de catégorie : les filtres passent en paramètres d'URL

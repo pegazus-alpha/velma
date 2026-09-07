@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageContenu, Bloc } from "@/components/PageContenu";
 import { ARemplir } from "@/components/ARemplir";
 import { lienWhatsApp } from "@/lib/config";
+import { partage } from "@/lib/meta";
 
 /* Cette page porte à elle seule TROIS des dix mots-clés retenus (§ 4.3) :
    `prix nike douala fcfa`, `basket nike prix douala fcfa`,
@@ -13,8 +14,15 @@ export const metadata: Metadata = {
   description:
     "Combien coûte une paire de Nike à Douala, comment commander sur WhatsApp, livraison et paiement. Les questions qu'on nous pose le plus.",
   alternates: { canonical: "/faq" },
+  openGraph: partage({ url: "/faq" }),
 };
 
+/* ⚠️ **Pas de données structurées `FAQPage` ici**, délibérément. Deux raisons :
+   trois des six réponses sont encore des gabarits `ARemplir` — les publier
+   reviendrait à déclarer à Google des réponses que le client n'a pas données
+   (§ 3.5) ; et depuis 2023 Google ne montre plus les résultats enrichis FAQ
+   qu'aux sites gouvernementaux et de santé, le gain serait donc nul.
+   À rouvrir quand les réponses manquantes arriveront. */
 /** Une question. Dépliant natif : accessible, et zéro octet de JavaScript. */
 function Question({ q, children }: { q: string; children: React.ReactNode }) {
   return (

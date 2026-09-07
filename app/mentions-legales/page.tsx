@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageContenu, Bloc } from "@/components/PageContenu";
 import { ARemplir } from "@/components/ARemplir";
+import { partage } from "@/lib/meta";
 
 /* 🔴 § 1.4-7 : « Mentions légales : INTÉGRATION des textes fournis par le client
    — non rédigés par nous. » Et § 3.5 : « NON GÉNÉRÉES, ET ELLES NE LE SERONT PAS.
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
   title: "Mentions légales",
   description: "Mentions légales du site VELMA.",
   alternates: { canonical: "/mentions-legales" },
+  openGraph: partage({ url: "/mentions-legales" }),
   robots: { index: false, follow: true },
 };
 

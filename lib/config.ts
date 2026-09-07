@@ -37,6 +37,11 @@ export const config = {
      *  Le repère reste à obtenir du client — bloquant pour la mise en ligne. */
     repere: process.env.BOUTIQUE_REPERE ?? "",
     horaires: requis("BOUTIQUE_HORAIRES", process.env.BOUTIQUE_HORAIRES),
+    /** Les mêmes horaires, au format que lisent les moteurs (`Mo-Su 07:00-22:00`).
+     *  ⚠️ Facultatif et jamais déduit de `BOUTIQUE_HORAIRES` : une horaire
+     *  fausse dans Google enverrait des clients devant une boutique fermée.
+     *  Tant qu'il est vide, les données structurées n'annoncent pas d'horaire. */
+    horairesIso: process.env.BOUTIQUE_HORAIRES_ISO ?? "",
   },
 
   /** ⚠️ Sans chemin explicite, la base atterrit dans le dossier de déploiement
